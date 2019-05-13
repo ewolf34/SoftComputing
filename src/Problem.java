@@ -154,6 +154,11 @@ public class Problem
 
     public static int fitness(int[] indi)
     {
+        return fitnessFix(indi) + fitnessVar(indi);
+    }
+    
+    public static int fitnessFix(int[] indi)
+    {
         int fit = 0;
         for(int i = 0; i < indi.length; i++)
         {
@@ -162,6 +167,12 @@ public class Problem
                 fit += f[i];
             }
         }
+        return fit;
+    }
+    
+    public static int fitnessVar(int [] indi)
+    {
+        int fit = 0;
         for(int i = 0; i < t[0].length; i++)//Nächste Spalte
         {
             int merker = Integer.MAX_VALUE;
