@@ -1,4 +1,6 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -6,8 +8,8 @@ import java.util.Map.Entry;
 public class Ablauf
 {
     // Parameter
-    static int anz = 10 * 2; // Anzahl Individuen
-    static int maxit = 20; // Maximale Anzahl an Itertionen
+    static int anz = 100 * 2; // Anzahl Individuen
+    static int maxit = 1000; // Maximale Anzahl an Itertionen
     static boolean minimierung = true; // Minimierungsproblem
 
     // Datenstrukturen f�r GA
@@ -34,31 +36,89 @@ public class Ablauf
         else
             bestFit = Integer.MIN_VALUE;
 
-        Problem.einlesenInstanz("123UnifS.txt");
+        Problem.einlesenInstanz("2000-10.txt");
 
         Problem.initialisierung();
         
+       /* POPCHILD = new int[2][];
+        FITCHILD = new int[2];
         
-        bewertung(POP, FITFIX, FITVAR);
-        rank = ranking(FITFIX);
-        int [] ranktemp = ranking(FITVAR);
-        for(int i = 0; i < rank.length; i++)
+        for(iteration = 1; iteration <= maxit; iteration++)
         {
-            rank[i] += ranktemp[i];
+            verhandlung();
         }
-
-        /*bewertung(POP, FIT);
+        
+        
+*/
+        bewertung(POP, FIT);
 
         for (iteration = 1; iteration <= maxit; iteration++)
         {
             fortpflanzung();
-        }*/
+        }
     }
     
     public static int[] ranking(int[] fit)
     {
+        int[] sorted = new int[fit.length];
+        for(int i = 0; i < fit.length; i++)
+        {
+            sorted[i] = fit[i];
+        }
+        Arrays.sort(sorted);
+        int[] ranks = new int[fit.length];
         
-        return 
+        int find = 0;
+        for(int i = 0; i < fit.length; i++)
+        {
+            while(find == sorted[i])
+            {
+                i++;
+                if(i >= fit.length)
+                {
+                    return ranks;
+                }
+            }
+            find = sorted[i];
+            for(int j = 0; j< fit.length; j++)
+            {
+                if(find == fit[j])
+                {
+                    ranks[j] = i+1;
+                }
+            }
+        }
+        
+        return ranks;
+    }
+    
+    public static int[] getTwoBestIndex(int[] fit)
+    {
+        int[] index = new int[] {0,0};
+        int best = Integer.MAX_VALUE;
+        int second = Integer.MAX_VALUE;
+        for(int i = 0; i < fit.length; i++)
+        {
+            if(fit[i] < best)
+            {
+                second = best;
+                index[1] = index [0];
+                best = fit[i];
+                index[0] = i;
+                
+            }
+            else
+            {
+                if(fit[i] < second)
+                {
+                    second = fit[i];
+                    index[1] = i;
+                }
+            }
+            
+        }
+        
+        return index;
     }
     
     public static void bewertung(int[][] ind, int[] fit)
@@ -72,7 +132,7 @@ public class Ablauf
         for (int i = 0; i < fit.length; i++)
         {
             fit[i] = Problem.fitness(ind[i]);
-            System.out.println(i + " " + fit[i]);
+            //System.out.println(i + " " + fit[i]);
 
             if (minimierung)
             {
@@ -258,6 +318,21 @@ public class Ablauf
             return y;
         }
     }
+    
+    public static void eigeneSelektion()
+    {
+        for(int i = 0; i < anz; i++)
+        {
+            int x = wettkampfSelektion(FIT);
+            int y = wettkampfSelektion(FITCHILD);
+        
+                for(int j = 0; j < POP[0].length; j++)
+                {
+                    POP[0][j] = POPCHILD[0][j];
+                }
+        }
+        
+    }
 
     public static int gleichverteilteSelektion()
     {
@@ -297,8 +372,8 @@ public class Ablauf
                 POPCHILD[childIndex + 1][i] = POP[e1][i];
             }
         }
-        flipMutation(childIndex);
-        flipMutation(childIndex + 1);
+        swapMutation(childIndex);
+        swapMutation(childIndex + 1);
 
     }
 
@@ -426,7 +501,7 @@ public class Ablauf
 
         }
         bewertung(POPCHILD, FITCHILD);
-        ersetzteMitWettkampf();
+        eigeneSelektion();
     }
 
     public static void fortpflanzungInkrementell()
@@ -437,4 +512,19 @@ public class Ablauf
         bewertung(POPCHILD, FITCHILD);
         inkrementelleSelektion();
     }
+    public static void verhandlung()
+    {
+        bewertung(POP, FITFIX, FITVAR);
+        rank = ranking(FITFIX);
+        int [] ranktemp = ranking(FITVAR);
+        for(int i = 0; i < rank.length; i++)
+        {
+            rank[i] += ranktemp[i];
+            System.out.println("Elternteil " + (i+1) +": "+rank[i]);
+        }
+        int[] temp = getTwoBestIndex(rank);
+        crossover(temp[0], temp[1], 0 );
+    }
+    
+    
 }
