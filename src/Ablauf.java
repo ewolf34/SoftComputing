@@ -8,8 +8,8 @@ import java.util.Map.Entry;
 public class Ablauf
 {
     // Parameter
-    static int anz = 100 * 2; // Anzahl Individuen
-    static int maxit = 1000; // Maximale Anzahl an Itertionen
+    static int anz = 3 * 2; // Anzahl Individuen
+    static int maxit = 10000; // Maximale Anzahl an Itertionen
     static boolean minimierung = true; // Minimierungsproblem
 
     // Datenstrukturen f�r GA
@@ -54,7 +54,7 @@ public class Ablauf
 
         for (iteration = 1; iteration <= maxit; iteration++)
         {
-            fortpflanzung();
+            fortpflanzungInkrementell();
         }
     }
     
@@ -319,17 +319,38 @@ public class Ablauf
         }
     }
     
+    public static int wettkampfSelektionReverse(int[] arr)
+    {
+        int x = (int) (arr.length * Math.random());
+        int y = (int) (arr.length * Math.random());
+        if (arr[x] >= arr[y])
+        {
+            return x;
+        } else
+        {
+            return y;
+        }
+    }
+    
     public static void eigeneSelektion()
     {
         for(int i = 0; i < anz; i++)
         {
-            int x = wettkampfSelektion(FIT);
+            int x = wettkampfSelektionReverse(FIT);
             int y = wettkampfSelektion(FITCHILD);
         
+            if (FIT[x] <= FITCHILD[y])
+            {
+                 
+            } else
+            {
                 for(int j = 0; j < POP[0].length; j++)
                 {
-                    POP[0][j] = POPCHILD[0][j];
+                    POP[x][j] = POPCHILD[y][j];
                 }
+            }
+            
+            
         }
         
     }
@@ -359,11 +380,12 @@ public class Ablauf
 
     public static void crossover(int e1, int e2, int childIndex)
     {
-        int x = (int) (POP[0].length - (anz / (anz / 20)) - 1 * Math.random()) + (anz / (anz / 20)) + 1;
+        int x = (int) (POP[0].length * Math.random());
         for (int i = 0; i < POP[0].length; i++)
         {
             if (i < x)
             {
+                
                 POPCHILD[childIndex][i] = POP[e1][i];
                 POPCHILD[childIndex + 1][i] = POP[e2][i];
             } else
@@ -373,7 +395,7 @@ public class Ablauf
             }
         }
         swapMutation(childIndex);
-        swapMutation(childIndex + 1);
+        flipMutation(childIndex + 1);
 
     }
 
@@ -468,20 +490,20 @@ public class Ablauf
 
     public static void selektionDerKinder()
     {
-        /*
-         * int firstE = 0; int lastC = 0, secondLastC = 0; for(int i=0; i < anz; i++) {
-         * if(FIT[i] < FIT[firstE]) { firstE = i; }
-         * 
-         * if(FITCHILD[i] > FITCHILD[lastC]) { secondLastC = lastC; lastC = i; } else {
-         * if(FITCHILD[i] > FITCHILD[secondLastC]) { secondLastC = i; } } }
-         * 
-         * for(int i = 0; i < POP[0].length; i++) { POPCHILD[lastC][i] = POP[firstE][i];
-         * if(0.5 < Math.random()) { POPCHILD[secondLastC][i] = 1; } else {
-         * POPCHILD[secondLastC][i] = 0; }
-         * 
-         * }
-         */
-
+        
+          int firstE = 0; int lastC = 0, secondLastC = 0; for(int i=0; i < anz; i++) {
+          if(FIT[i] < FIT[firstE]) { firstE = i; }
+          
+          if(FITCHILD[i] > FITCHILD[lastC]) { secondLastC = lastC; lastC = i; } else {
+          if(FITCHILD[i] > FITCHILD[secondLastC]) { secondLastC = i; } } }
+          
+          for(int i = 0; i < POP[0].length; i++) { POPCHILD[lastC][i] = POP[firstE][i];
+          if(0.5 < Math.random()) { POPCHILD[secondLastC][i] = 1; } else {
+          POPCHILD[secondLastC][i] = 0; }
+          
+          }
+         
+/*
         for (int i = 0; i < anz; i++)
         {
             for (int j = 0; j < POP[i].length; j++)
@@ -489,7 +511,7 @@ public class Ablauf
                 POP[i][j] = POPCHILD[i][j];
             }
             FIT[i] = FITCHILD[i];
-        }
+        }*/
 
     }
 
@@ -497,16 +519,16 @@ public class Ablauf
     {
         for (int i = 0; i < anz; i += 2)
         {
-            crossover(wettkampfSelektion(FIT), wettkampfSelektion(FIT), i);
+            crossover(gleichverteilteSelektion(), gleichverteilteSelektion(), i);
 
         }
         bewertung(POPCHILD, FITCHILD);
-        eigeneSelektion();
+        selektionDerKinder();
     }
 
     public static void fortpflanzungInkrementell()
     {
-        POPCHILD = new int[2][];
+        POPCHILD = new int[2][POP[0].length];
         FITCHILD = new int[2];
         crossover(wettkampfSelektion(FIT), wettkampfSelektion(FIT), 0);
         bewertung(POPCHILD, FITCHILD);
